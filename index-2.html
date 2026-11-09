@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="description" content="Xenon Share — a privacy-first concept for sharing the photos and videos that matter, with a simple six-digit code." />
+  <meta property="og:title" content="Xenon Share — Memories, shared." />
+  <meta property="og:description" content="A quieter, privacy-first way to share the memories you choose." />
+  <meta property="og:type" content="website" />
+  <title>Xenon Share — Memories, shared.</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23151c28'/%3E%3Cpath d='M18 18l28 28M46 18L18 46' stroke='%23d8e2ef' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d12;
+      --bg-soft: #10141c;
+      --panel: rgba(20, 26, 36, .72);
+      --panel-strong: #151c27;
+      --line: rgba(202, 216, 235, .12);
+      --line-strong: rgba(202, 216, 235, .2);
+      --text: #edf2f8;
+      --muted: #a0aabb;
+      --faint: #737f90;
+      --accent: #b8c9df;
+      --accent-strong: #dce8f6;
+      --green: #a9c8b5;
+      --radius: 24px;
+      --max: 1180px;
+      --ease: cubic-bezier(.2,.75,.25,1);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(ellipse at 78% 12%, rgba(102, 129, 164, .13), transparent 35%),
+        radial-gradient(ellipse at 8% 44%, rgba(79, 97, 124, .1), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .22;
+      background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .page-shell { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+    .top-progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: linear-gradient(90deg, #8197b2, #d6e1ef); z-index: 50; box-shadow: 0 0 12px rgba(181,202,229,.45); }
+    .nav-wrap { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid rgba(209,220,235,.07); background: rgba(10,12,17,.72); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+    .nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 650; letter-spacing: -.035em; }
+    .brand-mark { width: 35px; height: 35px; display: grid; place-items: center; border: 1px solid rgba(214,228,246,.2); border-radius: 12px; background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.025)); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 5px 18px rgba(0,0,0,.24); }
+    .brand-mark svg { width: 17px; height: 17px; }
+    .brand span:last-child { color: #b8c3d2; font-weight: 480; }
+    .nav-links { display: flex; align-items: center; gap: 31px; color: var(--muted); font-size: 13px; }
+    .nav-links a { transition: color .25s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.035); color: #c8d2df; font-size: 11px; letter-spacing: .035em; white-space: nowrap; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #b2c6d9; box-shadow: 0 0 0 4px rgba(178,198,217,.1); }
+    .menu-toggle { display: none; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 13px; color: var(--text); background: rgba(255,255,255,.04); cursor: pointer; }
+
+    .hero { position: relative; display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: 50px; padding: 93px 0 88px; min-height: 700px; }
+    .hero-copy { position: relative; z-index: 2; max-width: 530px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 10px; color: #b9c6d7; font-size: 11px; letter-spacing: .17em; text-transform: uppercase; font-weight: 650; }
+    .eyebrow-line { width: 28px; height: 1px; background: #8194ac; }
+    h1 { margin: 24px 0 21px; max-width: 610px; font-size: clamp(49px, 6.1vw, 78px); line-height: .99; letter-spacing: -.075em; font-weight: 570; }
+    h1 .soft { color: #8f9bab; }
+    .hero-copy > p { max-width: 490px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.8; }
+    .hero-actions { display: flex; align-items: center; gap: 13px; margin-top: 32px; flex-wrap: wrap; }
+    .button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 48px; padding: 0 19px; border-radius: 14px; font-size: 13px; font-weight: 620; transition: transform .25s var(--ease), border-color .25s ease, background .25s ease; cursor: pointer; }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { color: #10151d; background: linear-gradient(180deg, #e2eaf4, #b9c9dc); box-shadow: 0 9px 28px rgba(156,181,212,.14), inset 0 1px 0 rgba(255,255,255,.75); }
+    .button-primary:hover { background: linear-gradient(180deg, #f0f5fb, #c9d8e9); }
+    .button-quiet { color: #d2dbe7; border: 1px solid var(--line-strong); background: rgba(255,255,255,.035); }
+    .button-quiet:hover { border-color: rgba(202,216,235,.35); background: rgba(255,255,255,.07); }
+    .button svg { width: 15px; height: 15px; }
+    .hero-footnote { display: flex; align-items: center; gap: 9px; margin-top: 25px; color: var(--faint); font-size: 11px; }
+    .hero-footnote svg { width: 14px; height: 14px; color: #a9b8c9; }
+
+    .visual-wrap { position: relative; min-width: 0; padding: 18px 0 28px; }
+    .visual-aura { position: absolute; inset: 12% 4% 6%; border-radius: 48%; background: radial-gradient(ellipse, rgba(112,139,174,.16), transparent 68%); filter: blur(25px); animation: aura 8s ease-in-out infinite alternate; }
+    .visual-grid { position: absolute; inset: 0 -22px; opacity: .23; background-image: radial-gradient(rgba(193,211,235,.52) .7px, transparent .7px); background-size: 18px 18px; mask-image: radial-gradient(ellipse, black, transparent 72%); }
+    .visual-caption { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; margin: 0 5px 16px; color: #8793a4; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .visual-caption span:last-child { color: #697587; letter-spacing: .06em; }
+    .phone-stage { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: clamp(4px, 1.2vw, 18px); min-height: 462px; padding: 24px 8px 22px; }
+    .phone { position: relative; width: clamp(174px, 18vw, 212px); height: 424px; flex: 0 0 auto; padding: 7px; border-radius: 34px; border: 1px solid rgba(230,239,250,.27); background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.035) 31%, rgba(255,255,255,.1) 70%, rgba(255,255,255,.04)); box-shadow: 0 30px 75px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.48), inset 0 -1px 0 rgba(255,255,255,.08); transform: perspective(1000px) rotateY(5deg) rotateX(1deg); animation: phone-float 7s ease-in-out infinite; }
+    .phone.receiver { transform: perspective(1000px) rotateY(-5deg) rotateX(1deg); animation-delay: -3.2s; margin-top: 35px; }
+    .phone::before { content: ""; position: absolute; z-index: 3; top: 9px; left: 50%; width: 64px; height: 17px; border-radius: 99px; background: #07090d; transform: translateX(-50%); box-shadow: inset 0 1px 2px rgba(255,255,255,.08); }
+    .phone-screen { position: relative; height: 100%; padding: 31px 12px 12px; overflow: hidden; border-radius: 27px; background: linear-gradient(165deg, #202a38, #111720 52%, #10151d); }
+    .phone-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, rgba(255,255,255,.1), transparent 18%, transparent 70%, rgba(255,255,255,.035)); }
+    .phone-status { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; color: rgba(238,244,251,.83); font-size: 8px; font-weight: 650; }
+    .status-icons { display: flex; align-items: center; gap: 4px; }
+    .status-icons i { display: block; width: 8px; height: 5px; border: 1px solid rgba(238,244,251,.8); border-radius: 1px; }
+    .phone-heading { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
+    .phone-heading small { color: #98a6b8; font-size: 8px; display: block; margin-bottom: 3px; }
+    .phone-heading strong { font-size: 14px; letter-spacing: -.04em; font-weight: 650; }
+    .round-icon { width: 25px; height: 25px; border: 1px solid rgba(225,236,248,.15); border-radius: 9px; display: grid; place-items: center; color: #bdcada; background: rgba(255,255,255,.05); }
+    .round-icon svg { width: 12px; height: 12px; }
+    .drive-chip { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px; border: 1px solid rgba(203,219,239,.13); border-radius: 12px; background: rgba(255,255,255,.045); }
+    .drive-logo { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: rgba(198,216,238,.12); color: #d0deed; font-size: 11px; font-weight: 700; }
+    .drive-chip b { display: block; color: #dce5f0; font-size: 8px; font-weight: 620; }
+    .drive-chip small { color: #8290a2; font-size: 7px; }
+    .connected { margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #a8c8b5; box-shadow: 0 0 0 3px rgba(168,200,181,.1); }
+    .phone-label { display: flex; justify-content: space-between; align-items: center; margin: 17px 1px 8px; color: #aab6c6; font-size: 8px; }
+    .phone-label span:last-child { color: #7f8c9d; }
+    .memory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .memory-tile { height: 76px; border-radius: 9px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.1); background: #28394a; }
+    .memory-tile::before, .memory-tile::after { content: ""; position: absolute; }
+    .memory-tile.one { background: linear-gradient(165deg, #9daeb6 0 31%, #586e7f 32% 53%, #263e50 54%); }
+    .memory-tile.one::before { width: 80px; height: 40px; left: -12px; bottom: -17px; background: #182c3a; border-radius: 50% 50% 0 0; transform: rotate(-12deg); }
+    .memory-tile.one::after { width: 55px; height: 30px; right: -13px; bottom: -8px; background: #344d5e; border-radius: 50% 50% 0 0; }
+    .memory-tile.two { background: linear-gradient(155deg, #b3a58e, #736e69 48%, #303a48 49%); }
+    .memory-tile.two::before { width: 25px; height: 25px; border-radius: 50%; background: #d6c8a9; top: 9px; right: 14px; opacity: .8; }
+    .memory-tile.two::after { width: 90px; height: 36px; left: -4px; bottom: -18px; background: #293644; border-radius: 50% 50% 0 0; }
+    .memory-tile.three { background: linear-gradient(170deg, #d1c4ad, #a28e7f 45%, #5b6670 46%); }
+    .memory-tile.three::before { width: 25px; height: 42px; left: 28px; bottom: 0; background: #34404a; border-radius: 50% 50% 0 0; }
+    .memory-tile.four { background: linear-gradient(145deg, #536779, #9b9a8d 50%, #314352 51%); }
+    .memory-tile.four::before { width: 34px; height: 34px; border-radius: 50%; background: rgba(230,220,195,.75); top: 11px; left: 15px; }
+    .tile-tag { position: absolute; z-index: 1; bottom: 5px; left: 6px; color: rgba(255,255,255,.9); font-size: 6px; text-shadow: 0 1px 3px #000; }
+    .phone-action { display: flex; align-items: center; justify-content: center; width: 100%; height: 33px; margin-top: 12px; border-radius: 10px; color: #18212c; background: linear-gradient(180deg, #dce6f1, #b6c7dc); font-size: 8px; font-weight: 750; box-shadow: 0 5px 14px rgba(0,0,0,.2); }
+    .phone-foot { margin-top: 8px; text-align: center; color: #758397; font-size: 6.5px; }
+    .receiver-copy { margin-top: 36px; text-align: center; }
+    .receiver-copy .mini-symbol { width: 38px; height: 38px; margin: 0 auto 13px; border: 1px solid rgba(204,220,239,.2); border-radius: 13px; background: rgba(255,255,255,.055); display: grid; place-items: center; color: #c6d6e8; }
+    .receiver-copy .mini-symbol svg { width: 18px; height: 18px; }
+    .receiver-copy h3 { margin: 0; color: #e3ebf4; font-size: 14px; letter-spacing: -.04em; }
+    .receiver-copy p { margin: 6px auto 19px; max-width: 140px; color: #8997a9; font-size: 7.5px; line-height: 1.6; }
+    .code-boxes { display: flex; justify-content: center; gap: 4px; }
+    .code-box { display: grid; place-items: center; width: 20px; height: 25px; border: 1px solid rgba(207,222,241,.2); border-radius: 6px; background: rgba(255,255,255,.055); color: #dce6f2; font-size: 11px; font-weight: 650; }
+    .receive-button { height: 31px; margin-top: 14px; border-radius: 9px; display: grid; place-items: center; color: #17212d; background: linear-gradient(180deg, #dce6f1, #b6c7dc); font-size: 8px; font-weight: 750; }
+    .secure-note { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 11px; color: #7d8d9f; font-size: 6.7px; }
+    .secure-note svg { width: 9px; height: 9px; }
+    .connection { position: relative; z-index: 4; width: 62px; flex: 0 0 62px; display: grid; place-items: center; margin: 0 -4px; }
+    .connection-line { position: absolute; top: 50%; width: 100px; height: 1px; left: 50%; transform: translate(-50%,-50%); background: linear-gradient(90deg, transparent, rgba(174,196,223,.65), transparent); }
+    .connection-line::after { content: ""; position: absolute; top: -2px; left: 0; width: 5px; height: 5px; border-radius: 50%; background: #dce7f5; box-shadow: 0 0 12px #c5d7ed; animation: signal 2.8s ease-in-out infinite; }
+    .connection-core { position: relative; display: grid; place-items: center; width: 43px; height: 43px; border: 1px solid rgba(213,228,246,.28); border-radius: 15px; background: rgba(26,35,48,.9); box-shadow: 0 0 0 7px rgba(174,196,223,.035), 0 12px 28px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.16); backdrop-filter: blur(12px); }
+    .connection-core svg { width: 19px; height: 19px; color: #d4e0ee; }
+    .connection-label { position: absolute; top: calc(50% + 31px); color: #8b9aab; font-size: 7px; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .float-tag { position: absolute; z-index: 4; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid rgba(215,229,246,.16); border-radius: 13px; color: #c5d1df; background: rgba(25,33,45,.73); box-shadow: 0 12px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter: blur(16px); font-size: 9px; animation: tag-float 6s ease-in-out infinite; }
+    .float-tag svg { width: 13px; height: 13px; color: #b4c7dc; }
+    .tag-left { left: 0; bottom: 57px; }
+    .tag-right { right: 0; top: 45px; animation-delay: -2.4s; }
+    .concept-tag { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 3px auto 0; color: #6f7c8d; font-size: 9px; letter-spacing: .025em; }
+    .concept-tag::before, .concept-tag::after { content: ""; width: 20px; height: 1px; background: rgba(169,187,210,.17); }
+
+    .ticker { border-top: 1px solid rgba(206,221,239,.08); border-bottom: 1px solid rgba(206,221,239,.08); background: rgba(255,255,255,.015); }
+    .ticker-inner { min-height: 76px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .ticker-item { display: flex; align-items: center; gap: 10px; color: #8491a2; font-size: 11px; letter-spacing: .025em; }
+    .ticker-item svg { width: 16px; height: 16px; color: #b1c1d3; }
+    .ticker-divider { width: 1px; height: 22px; background: var(--line); }
+
+    section.content-section { padding: 112px 0; }
+    .section-head { max-width: 620px; margin-bottom: 44px; }
+    .section-kicker { color: #a6b7ca; font-size: 10px; letter-spacing: .17em; text-transform: uppercase; font-weight: 650; }
+    h2 { margin: 14px 0 13px; font-size: clamp(34px, 4.2vw, 50px); line-height: 1.05; letter-spacing: -.065em; font-weight: 570; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .step-card { position: relative; min-height: 240px; padding: 25px; overflow: hidden; border: 1px solid var(--line); border-radius: 21px; background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018)); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); transition: transform .35s var(--ease), border-color .35s ease, background .35s ease; }
+    .step-card:hover { transform: translateY(-5px); border-color: rgba(202,216,235,.25); background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025)); }
+    .step-number { color: #77879a; font-size: 10px; letter-spacing: .15em; }
+    .step-icon { display: grid; place-items: center; width: 43px; height: 43px; margin: 27px 0 20px; border: 1px solid rgba(212,226,244,.18); border-radius: 14px; color: #c8d7e8; background: rgba(183,203,227,.07); }
+    .step-icon svg { width: 19px; height: 19px; }
+    .step-card h3 { margin: 0 0 8px; font-size: 17px; letter-spacing: -.035em; font-weight: 620; }
+    .step-card p { max-width: 300px; margin: 0; color: #929eae; font-size: 12px; line-height: 1.75; }
+    .step-orbit { position: absolute; width: 180px; height: 180px; right: -93px; top: -90px; border: 1px solid rgba(194,211,233,.075); border-radius: 50%; }
+    .step-orbit::after { content: ""; position: absolute; inset: 19px; border: 1px solid rgba(194,211,233,.06); border-radius: 50%; }
+
+    .privacy-section { position: relative; padding: 0 0 112px; }
+    .privacy-panel { position: relative; display: grid; grid-template-columns: 1fr .85fr; gap: 54px; padding: 52px; overflow: hidden; border: 1px solid rgba(207,222,241,.15); border-radius: 28px; background: linear-gradient(125deg, rgba(30,40,54,.83), rgba(17,23,32,.78) 55%, rgba(23,30,41,.87)); box-shadow: 0 25px 70px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08); }
+    .privacy-panel::before { content: ""; position: absolute; width: 520px; height: 520px; right: -140px; top: -290px; border-radius: 50%; background: radial-gradient(circle, rgba(155,181,212,.16), transparent 67%); pointer-events: none; }
+    .privacy-copy { position: relative; z-index: 1; }
+    .privacy-copy h2 { max-width: 510px; }
+    .privacy-copy > p { max-width: 530px; margin: 18px 0 0; color: #a3afbf; font-size: 13px; line-height: 1.85; }
+    .privacy-points { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+    .privacy-point { display: flex; align-items: flex-start; gap: 13px; padding: 15px; border: 1px solid rgba(211,225,242,.11); border-radius: 15px; background: rgba(255,255,255,.035); }
+    .privacy-point .check { flex: 0 0 auto; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 8px; color: #c1d6c8; background: rgba(157,195,171,.1); }
+    .privacy-point .check svg { width: 12px; height: 12px; }
+    .privacy-point b { display: block; margin: 1px 0 4px; color: #d9e2ed; font-size: 12px; font-weight: 620; }
+    .privacy-point span { display: block; color: #8d9aab; font-size: 10px; line-height: 1.65; }
+    .privacy-disclaimer { position: relative; z-index: 1; margin-top: 23px; padding: 12px 14px; border-left: 2px solid rgba(186,205,229,.4); color: #8997a9; background: rgba(255,255,255,.025); font-size: 10px; line-height: 1.7; }
+
+    .about-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; align-items: start; }
+    .about-mark { display: flex; align-items: center; justify-content: center; min-height: 280px; border: 1px solid var(--line); border-radius: 24px; background: radial-gradient(circle at 50% 43%, rgba(134,160,193,.16), transparent 57%), rgba(255,255,255,.02); }
+    .about-mark-inner { width: 112px; height: 112px; display: grid; place-items: center; border-radius: 34px; border: 1px solid rgba(220,233,249,.25); background: linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.025)); box-shadow: 0 22px 55px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.35); }
+    .about-mark-inner svg { width: 49px; height: 49px; color: #d8e4f2; }
+    .about-copy { padding-top: 7px; }
+    .about-copy h2 { margin-top: 13px; }
+    .about-copy p { max-width: 610px; color: #a0acbc; font-size: 13px; line-height: 1.9; }
+    .developer-line { display: flex; align-items: center; gap: 12px; margin-top: 26px; padding-top: 21px; border-top: 1px solid var(--line); }
+    .developer-avatar { display: grid; place-items: center; width: 37px; height: 37px; border: 1px solid rgba(216,230,247,.2); border-radius: 13px; color: #d3dfed; background: rgba(255,255,255,.06); font-size: 13px; font-weight: 650; }
+    .developer-line b { display: block; color: #dce5ef; font-size: 12px; font-weight: 620; }
+    .developer-line span { display: block; color: #7e8b9c; font-size: 10px; margin-top: 2px; }
+
+    .closing { padding: 0 0 96px; }
+    .closing-card { position: relative; text-align: center; padding: 67px 26px 62px; overflow: hidden; border: 1px solid rgba(211,226,244,.15); border-radius: 27px; background: radial-gradient(ellipse at 50% -15%, rgba(151,178,210,.17), transparent 55%), linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); }
+    .closing-card::before, .closing-card::after { content: ""; position: absolute; width: 260px; height: 260px; border: 1px solid rgba(200,219,240,.06); border-radius: 50%; top: -160px; left: 50%; transform: translateX(-50%); }
+    .closing-card::after { width: 330px; height: 330px; top: -196px; }
+    .closing-card h2 { position: relative; z-index: 1; margin: 12px auto; font-size: clamp(37px, 5vw, 57px); }
+    .closing-card p { position: relative; z-index: 1; max-width: 480px; margin: 0 auto 25px; color: #9aa7b8; font-size: 13px; line-height: 1.8; }
+    .closing-card .button { position: relative; z-index: 1; }
+    footer { border-top: 1px solid rgba(209,220,235,.08); }
+    .footer-inner { min-height: 93px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #788597; font-size: 10px; }
+    .footer-brand { display: flex; align-items: center; gap: 9px; color: #b4c0cf; font-size: 12px; font-weight: 620; }
+    .footer-brand .brand-mark { width: 27px; height: 27px; border-radius: 9px; }
+    .footer-brand .brand-mark svg { width: 13px; height: 13px; }
+    .footer-links { display: flex; align-items: center; gap: 20px; }
+    .footer-links a:hover { color: #d4deea; }
+    .reveal { opacity: 0; transform: translateY(23px); transition: opacity .75s var(--ease), transform .75s var(--ease); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .08s; }
+    .reveal-delay-2 { transition-delay: .16s; }
+    .reveal-delay-3 { transition-delay: .24s; }
+    @keyframes phone-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+    @keyframes tag-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+    @keyframes signal { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 5px); opacity: 0; } }
+    @keyframes aura { from { transform: scale(.94); opacity: .65; } to { transform: scale(1.08); opacity: 1; } }
+
+    @media (max-width: 1000px) {
+      .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 77px; }
+      .hero-copy { max-width: 720px; }
+      .visual-wrap { width: min(690px, 100%); margin: 0 auto; }
+      .phone-stage { min-height: 440px; }
+      .phone { width: 202px; height: 410px; }
+      .phone.receiver { margin-top: 20px; }
+      .privacy-panel { gap: 28px; padding: 39px; }
+      .about-grid { gap: 45px; }
+    }
+    @media (max-width: 680px) {
+      .page-shell { width: min(100% - 34px, var(--max)); }
+      .nav { min-height: 67px; }
+      .nav-links { display: none; position: absolute; top: 67px; left: 0; right: 0; padding: 18px 22px 22px; border-bottom: 1px solid var(--line); background: rgba(12,15,21,.96); backdrop-filter: blur(20px); flex-direction: column; align-items: flex-start; gap: 18px; }
+      .nav-links.open { display: flex; }
+      .nav-links a { font-size: 14px; }
+      .status-pill { padding: 7px 10px; font-size: 9px; }
+      .menu-toggle { display: grid; place-items: center; }
+      .menu-toggle svg { width: 18px; height: 18px; }
+      .hero { min-height: unset; padding: 69px 0 58px; gap: 23px; }
+      h1 { font-size: clamp(46px, 13vw, 67px); margin-top: 19px; }
+      .hero-copy > p { font-size: 14px; }
+      .hero-actions { margin-top: 25px; }
+      .button { min-height: 45px; padding: 0 15px; font-size: 12px; }
+      .visual-wrap { margin-top: 2px; width: 100%; }
+      .visual-caption { margin-bottom: 9px; font-size: 8px; }
+      .phone-stage { min-height: 350px; padding: 20px 0 14px; gap: 0; }
+      .phone { width: clamp(137px, 39vw, 176px); height: clamp(315px, 88vw, 380px); padding: 5px; border-radius: 27px; }
+      .phone.receiver { margin-top: 24px; }
+      .phone::before { top: 7px; width: 52px; height: 14px; }
+      .phone-screen { padding: 26px 9px 9px; border-radius: 22px; }
+      .phone-heading { margin-top: 15px; }
+      .phone-heading strong { font-size: 12px; }
+      .drive-chip { margin-top: 11px; padding: 7px; }
+      .drive-logo { width: 21px; height: 21px; }
+      .phone-label { margin-top: 13px; }
+      .memory-tile { height: clamp(55px, 17vw, 68px); }
+      .phone-action { height: 29px; margin-top: 9px; }
+      .receiver-copy { margin-top: 28px; }
+      .receiver-copy h3 { font-size: 12px; }
+      .receiver-copy p { margin-bottom: 14px; }
+      .code-box { width: clamp(15px, 4.7vw, 19px); height: 22px; font-size: 9px; }
+      .receive-button { height: 27px; margin-top: 11px; }
+      .connection { width: 37px; flex-basis: 37px; margin: 0 -2px; }
+      .connection-core { width: 34px; height: 34px; border-radius: 12px; box-shadow: 0 0 0 5px rgba(174,196,223,.035), 0 8px 20px rgba(0,0,0,.4); }
+      .connection-core svg { width: 15px; height: 15px; }
+      .connection-line { width: 61px; }
+      .connection-label { top: calc(50% + 25px); font-size: 6px; }
+      .float-tag { padding: 7px 9px; font-size: 7px; gap: 5px; }
+      .float-tag svg { width: 10px; height: 10px; }
+      .tag-left { bottom: 12px; left: -3px; }
+      .tag-right { top: 7px; right: -3px; }
+      .ticker-inner { min-height: 65px; justify-content: center; flex-wrap: wrap; gap: 12px 17px; padding: 15px 0; }
+      .ticker-item { font-size: 9px; gap: 7px; }
+      .ticker-item svg { width: 13px; height: 13px; }
+      .ticker-divider { height: 16px; }
+      section.content-section { padding: 78px 0; }
+      .section-head { margin-bottom: 28px; }
+      h2 { font-size: clamp(34px, 10vw, 44px); }
+      .section-head p { font-size: 13px; }
+      .steps { grid-template-columns: 1fr; gap: 10px; }
+      .step-card { min-height: 0; padding: 21px; }
+      .step-icon { margin: 19px 0 15px; }
+      .step-card h3 { font-size: 16px; }
+      .step-card p { font-size: 11px; }
+      .privacy-section { padding-bottom: 78px; }
+      .privacy-panel { grid-template-columns: 1fr; gap: 26px; padding: 27px 21px; border-radius: 22px; }
+      .privacy-copy > p { font-size: 12px; }
+      .privacy-points { gap: 9px; }
+      .privacy-point { padding: 12px; }
+      .about-grid { grid-template-columns: 1fr; gap: 28px; }
+      .about-mark { min-height: 205px; }
+      .about-mark-inner { width: 91px; height: 91px; border-radius: 28px; }
+      .about-mark-inner svg { width: 40px; height: 40px; }
+      .about-copy p { font-size: 12px; }
+      .closing { padding-bottom: 66px; }
+      .closing-card { padding: 53px 18px 48px; }
+      .closing-card p { font-size: 12px; }
+      .footer-inner { min-height: 108px; flex-wrap: wrap; justify-content: center; gap: 13px; padding: 20px 0; text-align: center; }
+      .footer-links { width: 100%; justify-content: center; gap: 17px; }
+    }
+    @media (max-width: 370px) {
+      .page-shell { width: calc(100% - 28px); }
+      .phone { width: 132px; }
+      .connection { width: 31px; flex-basis: 31px; }
+      .connection-core { width: 30px; height: 30px; }
+      .float-tag { display: none; }
+      .status-pill { font-size: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* Focused visual hierarchy + compact responsive phone showcase */
+    :root { --max: 1120px; }
+    body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    h1, h2, .brand, .phone-heading strong { font-family: 'Manrope', 'DM Sans', sans-serif; }
+    h1 { font-weight: 700; letter-spacing: -.078em; }
+    h2 { font-weight: 650; letter-spacing: -.06em; }
+    .hero { min-height: 625px; padding-top: 70px; padding-bottom: 65px; gap: 34px; grid-template-columns: .88fr 1.12fr; }
+    .hero-copy { max-width: 490px; }
+    .hero-copy > p { max-width: 430px; font-size: 16px; line-height: 1.7; color: #c0cad7; }
+    .hero-coming { margin-left: 5px; padding: 5px 9px; border: 1px solid rgba(202,216,235,.18); border-radius: 99px; color: #d7e0eb; background: rgba(255,255,255,.045); font-size: 9px; letter-spacing: .1em; }
+    h1 { font-size: clamp(47px, 5.5vw, 70px); }
+    .hero-footnote { margin-top: 19px; }
+    .visual-wrap { padding-top: 10px; }
+    .visual-caption { margin-bottom: 5px; }
+    .phone-stage { min-height: 430px; gap: 9px; padding: 12px 0 12px; }
+    .phone { width: clamp(165px, 17vw, 198px); height: 395px; }
+    .phone.receiver { margin-top: 20px; }
+    .connection { flex: 0 0 42px; width: 42px; }
+    .float-tag { z-index: 5; }
+    .ticker-inner { min-height: 68px; }
+    section.content-section { padding-top: 88px; padding-bottom: 88px; }
+    .section-head { margin-bottom: 30px; }
+    .step-card { min-height: 215px; }
+    .about-grid { grid-template-columns: .72fr 1.28fr; gap: 55px; align-items: stretch; }
+    .about-mark { min-height: 300px; }
+    .about-copy { padding: 30px 34px; border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012)); }
+    .about-copy p { max-width: 600px; font-size: 14px; line-height: 1.8; }
+    .developer-line { margin-top: 24px; }
+    .developer-avatar { width: 43px; height: 43px; border-radius: 15px; font-family: 'Manrope', sans-serif; }
+    .closing { padding-bottom: 78px; }
+    .closing-card { padding: 52px 24px 48px; }
+    .concept-tag { margin-top: 0; }
+    @media (max-width: 1000px) {
+      .hero { grid-template-columns: 1fr; gap: 20px; padding-top: 65px; }
+      .hero-copy { max-width: 680px; }
+      .visual-wrap { width: min(650px, 100%); }
+      .phone-stage { min-height: 420px; }
+      .phone { width: 190px; height: 390px; }
+      .about-grid { gap: 28px; }
+    }
+    @media (max-width: 680px) {
+      .page-shell { width: calc(100% - 32px); }
+      .hero { padding: 53px 0 40px; gap: 14px; }
+      .eyebrow { flex-wrap: wrap; gap: 7px; font-size: 9px; letter-spacing: .13em; }
+      .hero-coming { font-size: 8px; }
+      h1 { font-size: clamp(43px, 12vw, 59px); line-height: 1.01; margin: 17px 0 15px; }
+      .hero-copy > p { font-size: 14px; line-height: 1.65; max-width: 100%; }
+      .hero-actions { margin-top: 20px; gap: 9px; }
+      .button { min-height: 43px; padding: 0 13px; font-size: 11px; }
+      .hero-footnote { margin-top: 15px; font-size: 10px; }
+      .visual-wrap { width: 100%; margin-top: 4px; padding: 8px 0 0; }
+      .visual-caption { margin: 0 2px 2px; font-size: 8px; }
+      .phone-stage { width: 100%; min-height: 0; padding: 16px 0 13px; gap: 0; justify-content: space-between; }
+      .phone { width: clamp(108px, 36.5vw, 158px); height: clamp(278px, 91vw, 365px); padding: 4px; border-radius: 24px; }
+      .phone.receiver { margin-top: 17px; }
+      .phone::before { top: 6px; width: 43px; height: 12px; }
+      .phone-screen { padding: 23px 7px 7px; border-radius: 20px; }
+      .phone-status { font-size: 7px; }
+      .phone-heading { margin-top: 12px; }
+      .phone-heading small { font-size: 6px; }
+      .phone-heading strong { font-size: clamp(10px, 3vw, 12px); }
+      .round-icon { width: 21px; height: 21px; border-radius: 7px; }
+      .drive-chip { margin-top: 9px; padding: 6px; gap: 5px; }
+      .drive-chip b { font-size: 8px; }
+      .drive-chip small { font-size: 6px; }
+      .drive-logo { width: 18px; height: 18px; }
+      .phone-label { margin-top: 10px; font-size: 7px; }
+      .memory-grid { gap: 4px; }
+      .memory-tile { height: clamp(48px, 15vw, 61px); border-radius: 7px; }
+      .tile-tag { font-size: 5px; padding: 3px 4px; }
+      .phone-action { height: 25px; margin-top: 8px; font-size: 7px; }
+      .phone-foot { margin-top: 7px; font-size: 6px; }
+      .connection { width: 27px; flex: 0 0 27px; margin: 0; }
+      .connection-core { width: 29px; height: 29px; border-radius: 10px; }
+      .connection-core svg { width: 13px; height: 13px; }
+      .connection-label { top: calc(50% + 22px); font-size: 5px; }
+      .connection-line { width: 34px; }
+      .receiver-copy { margin-top: 26px; }
+      .mini-symbol { width: 29px; height: 29px; }
+      .receiver-copy h3 { font-size: clamp(9px, 2.9vw, 11px); margin: 12px 0 6px; }
+      .receiver-copy p { font-size: 6px; line-height: 1.55; margin-bottom: 11px; }
+      .code-boxes { gap: 2px; }
+      .code-box { width: clamp(12px, 4vw, 16px); height: 20px; font-size: 8px; border-radius: 5px; }
+      .receive-button { height: 24px; margin-top: 9px; font-size: 6px; }
+      .secure-note { margin-top: 9px; font-size: 5px; gap: 3px; }
+      .secure-note svg { width: 9px; height: 9px; }
+      .float-tag { padding: 6px 7px; font-size: 6px; gap: 4px; }
+      .float-tag svg { width: 9px; height: 9px; }
+      .tag-left { bottom: 0; left: 0; }
+      .tag-right { top: 0; right: 0; }
+      .concept-tag { font-size: 8px; }
+      .ticker-inner { justify-content: flex-start; gap: 10px 15px; padding: 14px 0; }
+      .ticker-item { font-size: 8px; }
+      .ticker-divider { display: none; }
+      section.content-section { padding: 66px 0; }
+      .steps { grid-template-columns: 1fr; }
+      .step-card { padding: 19px; }
+      .privacy-panel { padding: 24px 18px; }
+      .about-grid { grid-template-columns: 1fr; gap: 16px; }
+      .about-mark { min-height: 140px; }
+      .about-mark-inner { width: 70px; height: 70px; border-radius: 22px; }
+      .about-mark-inner svg { width: 32px; height: 32px; }
+      .about-copy { padding: 24px 20px; }
+      .about-copy p { font-size: 12px; }
+      .closing-card { padding: 43px 16px 39px; }
+      .footer-inner { gap: 12px; }
+    }
+    @media (max-width: 370px) {
+      .page-shell { width: calc(100% - 26px); }
+      .phone { width: clamp(104px, 35.5vw, 125px); }
+      .connection { width: 24px; flex-basis: 24px; }
+      .connection-core { width: 26px; height: 26px; }
+      .float-tag { display: none; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="top-progress" id="topProgress"></div>
+  <div class="nav-wrap">
+    <nav class="nav page-shell" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Xenon Share home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+        <span>Xenon <span>Share</span></span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#how">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#about">About</a>
+      </div>
+      <div class="nav-right">
+        <span class="status-pill"><i class="status-dot"></i> Coming soon</span>
+        <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <section class="hero page-shell" id="home">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> PRIVATE MEMORY SHARING <span class="hero-coming">COMING SOON</span></div>
+        <h1>Your memories.<br><span class="soft">Your code.</span><br>Your people.</h1>
+        <p>Pick photos and videos from Google Drive. Get a six-digit code. Someone you trust enters it and views the memories you chose.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#how">See how it works <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="button button-quiet" href="#privacy">Our privacy approach</a>
+        </div>
+        <div class="hero-footnote">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+          A product concept in development. Not live yet.
+        </div>
+      </div>
+
+      <div class="visual-wrap" aria-label="Concept preview showing one person selecting memories and another viewing them with a six-digit code">
+        <div class="visual-aura"></div><div class="visual-grid"></div>
+        <div class="visual-caption"><span>01 / The sharing flow</span><span>Concept interface</span></div>
+        <div class="float-tag tag-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v13H4zM4 7l2-3h5l2 3"/><circle cx="12" cy="13" r="3"/></svg> Your selected moments</div>
+        <div class="float-tag tag-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg> Access by your choice</div>
+        <div class="phone-stage">
+          <div class="phone sender" aria-hidden="true">
+            <div class="phone-screen">
+              <div class="phone-status"><span>9:41</span><span class="status-icons"><i></i><i></i><i style="width:13px"></i></span></div>
+              <div class="phone-heading"><div><small>YOUR SPACE</small><strong>Memories</strong></div><span class="round-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></span></div>
+              <div class="drive-chip"><span class="drive-logo">D</span><div><b>Google Drive</b><small>Connected account</small></div><i class="connected"></i></div>
+              <div class="phone-label"><span>Selected memories</span><span>4 items</span></div>
+              <div class="memory-grid">
+                <div class="memory-tile one"><span class="tile-tag">Weekend</span></div>
+                <div class="memory-tile two"><span class="tile-tag">Golden hour</span></div>
+                <div class="memory-tile three"><span class="tile-tag">Together</span></div>
+                <div class="memory-tile four"><span class="tile-tag">The little things</span></div>
+              </div>
+              <div class="phone-action">Create 6-digit code <span style="margin-left:5px">↗</span></div>
+              <div class="phone-foot">Only share what you choose</div>
+            </div>
+          </div>
+          <div class="connection" aria-hidden="true">
+            <div class="connection-line"></div>
+            <div class="connection-core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5l-2 2a4 4 0 01-5.6-5.6l4-4a4 4 0 015.6 0M15.5 8.5l2-2a4 4 0 015.6 5.6l-4 4a4 4 0 01-5.6 0M8 16l8-8"/></svg></div>
+            <span class="connection-label">Xenon Share</span>
+          </div>
+          <div class="phone receiver" aria-hidden="true">
+            <div class="phone-screen">
+              <div class="phone-status"><span>9:41</span><span class="status-icons"><i></i><i></i><i style="width:13px"></i></span></div>
+              <div class="receiver-copy">
+                <div class="mini-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 15l-5-5L5 19"/></svg></div>
+                <h3>A memory, waiting.</h3>
+                <p>Enter the private code shared with you to view these moments.</p>
+                <div class="code-boxes"><span class="code-box">4</span><span class="code-box">8</span><span class="code-box">2</span><span class="code-box">1</span><span class="code-box">0</span><span class="code-box">6</span></div>
+                <div class="receive-button">View shared memories</div>
+                <div class="secure-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg> Shared by someone you trust</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="concept-tag">Promotional mockup · Actual UI may differ</div>
+      </div>
+    </section>
+
+    <div class="ticker" aria-label="Product principles">
+      <div class="ticker-inner page-shell">
+        <div class="ticker-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg> Your files stay in your Drive</div>
+        <span class="ticker-divider"></span>
+        <div class="ticker-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg> Share with a six-digit code</div>
+        <span class="ticker-divider"></span>
+        <div class="ticker-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v13H4zM4 7l2-3h5l2 3"/><circle cx="12" cy="13" r="3"/></svg> Choose exactly what gets shared</div>
+      </div>
+    </div>
+
+    <section class="content-section page-shell" id="how">
+      <div class="section-head reveal">
+        <div class="section-kicker">A simple three-step idea</div>
+        <h2>From your Drive<br>to someone you trust.</h2>
+        <p>No account maze for the person receiving your memories. The planned experience is built around one small code and the moments you choose to share.</p>
+      </div>
+      <div class="steps">
+        <article class="step-card reveal reveal-delay-1">
+          <span class="step-number">STEP 01 — CONNECT</span><div class="step-orbit"></div>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17.5a4.5 4.5 0 010-9h.5A5.5 5.5 0 0118 10h.5a3.5 3.5 0 010 7H15"/><path d="M12 12v9m-3-3l3 3 3-3"/></svg></div>
+          <h3>Connect your Drive</h3><p>Choose Google Drive as the place your photos and videos already live. You stay in control of what you select.</p>
+        </article>
+        <article class="step-card reveal reveal-delay-2">
+          <span class="step-number">STEP 02 — CREATE</span><div class="step-orbit"></div>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9h.01M11 9h.01M15 9h.01M7 14h.01M11 14h.01M15 14h.01"/></svg></div>
+          <h3>Create a six-digit code</h3><p>Generate a simple code for the set of memories you want to share, instead of sending a pile of individual files.</p>
+        </article>
+        <article class="step-card reveal reveal-delay-3">
+          <span class="step-number">STEP 03 — VIEW</span><div class="step-orbit"></div>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg></div>
+          <h3>They enter. They view.</h3><p>The recipient enters your code and views the memories you chose to make available. No need to forward the original files around.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="privacy-section page-shell" id="privacy">
+      <div class="privacy-panel reveal">
+        <div class="privacy-copy">
+          <div class="section-kicker">The principle behind Xenon</div>
+          <h2>Your memories aren't our content.</h2>
+          <p>Xenon Share is being designed around a clear boundary: your photos and videos should remain yours. The intended architecture keeps your media in Google Drive and avoids building a Xenon-owned library of people's memories.</p>
+          <div class="privacy-disclaimer"><strong>Important:</strong> Xenon Share is not live yet. This is the privacy goal for the product, not a verified security guarantee. The final Google Drive permissions, access flow, and technical implementation must be tested before launch.</div>
+        </div>
+        <div class="privacy-points">
+          <div class="privacy-point"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></span><div><b>No Xenon media library</b><span>The product is intended to avoid storing copies of your memories on Xenon servers.</span></div></div>
+          <div class="privacy-point"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></span><div><b>No training or reuse</b><span>Your personal photos and videos are not meant to become product content or AI training material.</span></div></div>
+          <div class="privacy-point"><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></span><div><b>You choose what to share</b><span>The intended flow starts with the memories you select and the person you choose to share them with.</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section page-shell" id="about">
+      <div class="about-grid">
+        <div class="about-mark reveal"><div class="about-mark-inner"><svg viewBox="0 0 48 48" fill="none"><path d="M10 10l28 28M38 10L10 38" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/></svg></div></div>
+        <div class="about-copy reveal reveal-delay-1">
+          <div class="section-kicker">THE PERSON BEHIND XENON</div>
+          <h2>A small idea.<br>A more thoughtful way to share.</h2>
+          <p>I'm Yaksh Verma, an independent student developer who enjoys turning practical problems into useful software. I started Xenon Share around one simple belief: sharing a memory should feel easy, while control of the original file stays with its owner.</p>
+          <div class="developer-line"><div class="developer-avatar">YV</div><div><b>Yaksh Verma</b><span>Founder &amp; developer · Xenon Share</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing page-shell">
+      <div class="closing-card reveal">
+        <div class="section-kicker">XENON SHARE IS IN DEVELOPMENT</div>
+        <h2>Good memories.<br>One simple code.</h2>
+        <p>Google Drive connection, private sharing codes, and a simpler viewing experience. Coming soon.</p>
+        <span class="button button-primary" aria-label="Xenon Share is coming soon">Coming soon <span aria-hidden="true">·</span> Stay tuned</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner page-shell">
+      <a class="footer-brand" href="#home"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>Xenon Share</a>
+      <span>© <span id="year">2026</span> Xenon Share. An independent concept by Yaksh Verma.</span>
+      <div class="footer-links"><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#about">About</a></div>
+    </div>
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    menuToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+    });
+    navLinks.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle.setAttribute('aria-label', 'Open navigation');
+    }));
+
+    const progress = document.getElementById('topProgress');
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const amount = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+      progress.style.width = `${amount}%`;
+    };
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const revealItems = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+      revealItems.forEach(item => observer.observe(item));
+    } else {
+      revealItems.forEach(item => item.classList.add('visible'));
+    }
+  </script>
+</body>
+</html>
